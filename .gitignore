@@ -186,6 +186,8 @@ gradle-app.setting
 # yml
 # 로컬 환경 설정 파일
 /src/main/resources/application-dev.yml
+# email 인증 설정 파일
+/src/main/resources/application-email.yml
 
 # env
 .env
