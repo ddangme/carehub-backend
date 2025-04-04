@@ -187,4 +187,7 @@ gradle-app.setting
 # 로컬 환경 설정 파일
 /src/main/resources/application-dev.yml
 
+# env
+.env
+
 # End of https://www.toptal.com/developers/gitignore/api/java,gradle,intellij+all,macos
