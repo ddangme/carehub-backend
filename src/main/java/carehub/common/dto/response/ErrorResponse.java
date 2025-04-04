@@ -1,4 +1,4 @@
-package carehub.common.dto;
+package carehub.common.dto.response;
 
 import carehub.common.exception.ErrorCode;
 import lombok.AllArgsConstructor;

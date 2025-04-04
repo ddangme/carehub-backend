@@ -1,6 +1,6 @@
 package carehub.common.exception;
 
-import carehub.common.dto.ApiResponse;
+import carehub.common.dto.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -25,7 +25,7 @@ public class GlobalExceptionHandler {
                     .append(", ");
         }
 
-        ApiResponse<Void> response = ApiResponse.error(ErrorCode.INVALID_INPUT, errorMessage.toString()
+        ApiResponse<Void> response = ApiResponse.error(ErrorCode.INVALID_INPUT_VALUE, errorMessage.toString()
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
