@@ -1,4 +1,4 @@
-package carehub.common.dto;
+package carehub.common.dto.response;
 
 import carehub.common.exception.ErrorCode;
 import lombok.AllArgsConstructor;
@@ -10,6 +10,10 @@ public class ApiResponse<T> {
     private boolean success;
     private T data;
     private ErrorResponse error;
+
+    public static <T> ApiResponse<T> success() {
+        return ApiResponse.success(null);
+    }
 
     public static <T> ApiResponse<T> success(T data) {
         return new ApiResponse<>(true, data, null);
