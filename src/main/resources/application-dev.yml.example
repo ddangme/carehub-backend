@@ -4,3 +4,7 @@ spring:
     username: project_username
     password: project_username
     driver-class-name: org.postgresql.Driver
+
+app:
+  cors:
+    allowed-origins: https://production-site.com
