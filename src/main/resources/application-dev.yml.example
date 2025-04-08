@@ -8,3 +8,8 @@ spring:
 app:
   cors:
     allowed-origins: https://production-site.com
+
+jwt:
+  secret: jwt-secret
+  access-token-validity-in-seconds: 3600
+  refresh-token-validity-in-seconds: 2419200
