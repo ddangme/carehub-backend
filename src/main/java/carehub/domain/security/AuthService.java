@@ -72,6 +72,41 @@ public class AuthService {
     }
 
     /**
+     * 소셜 로그인 사용자를 위한 토큰 생성 (인증 과정 없이 직접 토큰 생성)
+     */
+    @Transactional
+    public TokenResponse createTokensForSocialLogin(User user, String deviceId, String fcmToken) {
+        if (deviceId == null || deviceId.isBlank()) {
+            deviceId = UUID.randomUUID().toString();
+        }
+
+        refreshTokenRepository.findByUserIdAndDeviceId(user.getId(), deviceId)
+                .ifPresent(refreshTokenRepository::delete);
+
+        String accessToken = tokenProvider.createAccessToken(user.getEmail());
+        String refreshToken = tokenProvider.createRefreshToken(user.getId(), deviceId);
+
+        if (fcmToken != null && !fcmToken.isBlank()) {
+            refreshTokenRepository.findByToken(refreshToken)
+                    .ifPresent(token -> {
+                        token.setFcmToken(fcmToken);
+                        refreshTokenRepository.save(token);
+                    });
+        }
+
+        user.getPreference().setLastLoginAt(java.time.LocalDateTime.now());
+        userRepository.save(user);
+
+        return TokenResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .expiresIn(3600L)
+                .tokenType("Bearer")
+                .userInfo(mapUserInfo(user))
+                .build();
+    }
+
+    /**
      * 토큰 갱신
      */
     @Transactional
@@ -130,7 +165,6 @@ public class AuthService {
     private UserInfo mapUserInfo(User user) {
         return UserInfo.builder()
                 .id(user.getId())
-                .email(user.getEmail())
                 .name(user.getName())
                 .profileImageUrl(user.getProfileImageUrl())
                 .build();
