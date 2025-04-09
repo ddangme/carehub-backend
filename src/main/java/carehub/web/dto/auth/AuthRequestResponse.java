@@ -55,7 +55,6 @@ public class AuthRequestResponse {
     @AllArgsConstructor
     public static class UserInfo {
         private Long id;
-        private String email;
         private String name;
         private String profileImageUrl;
     }
