@@ -18,6 +18,8 @@ spring:
 app:
   cors:
     allowed-origins: https://production-site.com
+  frontend:
+    url: https://production-site.com
 
 jwt:
   secret: jwt-secret

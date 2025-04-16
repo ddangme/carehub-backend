@@ -104,4 +104,56 @@ public class UserService {
         return savedUser.getId();
     }
 
+    /**
+     * 비밀번호 재설정 이메일 발송
+     * @param email 이메일
+     */
+    public void sendPasswordResetEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        String resetToken = verificationService.createVerificationToken(email);
+        emailService.sendPasswordResetEmail(email, user.getName(), resetToken);
+
+        log.info("Password reset email sent to: {}", email);
+    }
+
+    /**
+     * 비밀번호 재설정 토큰 검증
+     * @param email 이메일
+     * @param token 검증 토큰
+     * @return 검증 결과
+     */
+    public boolean verifyPasswordResetToken(String email, String token) {
+        String storedEmail = verificationService.verifyToken(token);
+        return storedEmail != null && storedEmail.equals(email);
+    }
+
+    /**
+     * 비밀번호 재설정
+     * @param email 이메일
+     * @param token 검증 토큰
+     * @param newPassword 새 비밀번호
+     */
+    @Transactional
+    public void resetPassword(String email, String token, String newPassword) {
+        // 토큰 검증
+        if (!verifyPasswordResetToken(email, token)) {
+            throw new BusinessException(ErrorCode.INVALID_VERIFICATION_TOKEN);
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        // 비밀번호 업데이트
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        user.setPassword(encodedPassword);
+        userRepository.save(user);
+
+        // 토큰 만료 처리
+        verificationService.completeVerification(email, token);
+
+        log.info("Password reset completed for user: {}", email);
+    }
+
 }
