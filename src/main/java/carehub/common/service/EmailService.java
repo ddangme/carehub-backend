@@ -25,6 +25,9 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String fromEmail;
 
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
     private static final String applicationName = "Care Hub";
 
     /**
@@ -91,6 +94,43 @@ public class EmailService {
             log.info("Welcome email sent successfully to: {}", to);
         } catch (MessagingException e) {
             log.error("Failed to send welcome email to: {}", to, e);
+        }
+    }
+
+    /**
+     * 비밀번호 재설정 이메일 발송
+     * @param to 수신자 이메일
+     * @param name 사용자 이름
+     * @param resetToken 재설정 토큰
+     */
+    @Async
+    public void sendPasswordResetEmail(String to, String name, String resetToken) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(
+                    message,
+                    MimeMessageHelper.MULTIPART_MODE_MIXED,
+                    StandardCharsets.UTF_8.name()
+            );
+
+            Context context = new Context();
+            context.setVariable("name", name);
+            context.setVariable("resetToken", resetToken);
+            context.setVariable("appName", applicationName);
+            context.setVariable("resetUrl", frontendUrl + "/reset-password?token=" + resetToken + "&email=" + to);
+
+            String emailContent = templateEngine.process("email/password-reset", context);
+
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject(applicationName + " - 비밀번호 재설정");
+            helper.setText(emailContent, true);
+
+            mailSender.send(message);
+            log.info("Password reset email sent successfully to: {}", to);
+        } catch (MessagingException e) {
+            log.error("Failed to send password reset email to: {}", to, e);
+            throw new RuntimeException("비밀번호 재설정 이메일 발송에 실패했습니다.", e);
         }
     }
 }
