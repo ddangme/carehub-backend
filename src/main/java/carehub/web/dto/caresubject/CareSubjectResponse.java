@@ -1,7 +1,7 @@
 package carehub.web.dto.caresubject;
 
-
 import carehub.domain.caresubject.CareSubject;
+import carehub.domain.caresubject.CareSubjectType;
 import carehub.domain.caresubject.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,6 +31,9 @@ public class CareSubjectResponse {
     private Map<String, Object> additionalInfo;
     private Boolean isActive;
 
+    // 케어 대상 타입
+    private CareSubjectType subjectType;
+
     // 계산된 필드
     private int ageInMonths;
     private long ageInDays;
@@ -42,6 +45,16 @@ public class CareSubjectResponse {
 
     // 보호자 목록 (간단한 정보만)
     private List<GuardianSummary> guardians;
+
+    // 신생아 전용 필드들
+    private Integer birthWeightGrams;
+    private Integer birthHeightCm;
+    private Integer headCircumferenceCm;
+    private Integer gestationalAgeWeeks;
+    private String deliveryType;
+    private String allergies;
+    private String specialCareNeeds;
+    private LocalDate lastCheckupDate;
 
     @Data
     @Builder
@@ -77,12 +90,22 @@ public class CareSubjectResponse {
                 .profileImageUrl(careSubject.getProfileImageUrl())
                 .additionalInfo(careSubject.getAdditionalInfo())
                 .isActive(careSubject.getIsActive())
+                .subjectType(careSubject.getSubjectType())
                 .ageInMonths(careSubject.getAgeInMonths())
                 .ageInDays(careSubject.getAgeInDays())
                 .createdByName(careSubject.getCreatedBy().getName())
                 .createdAt(careSubject.getCreatedAt())
                 .updatedAt(careSubject.getUpdatedAt())
                 .guardians(guardianSummaries)
+                // 신생아 전용 필드들
+                .birthWeightGrams(careSubject.getBirthWeightGrams())
+                .birthHeightCm(careSubject.getBirthHeightCm())
+                .headCircumferenceCm(careSubject.getHeadCircumferenceCm())
+                .gestationalAgeWeeks(careSubject.getGestationalAgeWeeks())
+                .deliveryType(careSubject.getDeliveryType())
+                .allergies(careSubject.getAllergies())
+                .specialCareNeeds(careSubject.getSpecialCareNeeds())
+                .lastCheckupDate(careSubject.getLastCheckupDate())
                 .build();
     }
 }
