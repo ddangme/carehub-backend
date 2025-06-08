@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Slf4j
@@ -33,22 +34,51 @@ public class CareSubjectService {
      */
     @Transactional
     public CareSubject createCareSubject(CareSubjectCreateRequest request, Long createdById) {
+        log.info("케어 대상 생성 시작 - 생성자 ID: {}, 요청: {}", createdById, request);
+
+        // 요청 데이터 정리 및 검증
+        request.cleanEmptyFields();
+        request.validateRequest();
+
         User creator = userRepository.findById(createdById)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        // BigDecimal 변환 (기존 호환성 유지)
+        BigDecimal birthWeight = request.getBirthWeightGrams() != null
+                ? new BigDecimal(request.getBirthWeightGrams()).divide(new BigDecimal("1000"))
+                : null;
+        BigDecimal birthHeight = request.getBirthHeightCm() != null
+                ? new BigDecimal(request.getBirthHeightCm()).divide(new BigDecimal("100"))
+                : null;
 
         CareSubject careSubject = CareSubject.builder()
                 .name(request.getName())
                 .birthDate(request.getBirthDate())
                 .gender(request.getGender())
                 .bloodType(request.getBloodType())
-                .birthWeight(request.getBirthWeight())
-                .birthHeight(request.getBirthHeight())
+                .birthWeight(birthWeight)
+                .birthHeight(birthHeight)
                 .profileImageUrl(request.getProfileImageUrl())
                 .additionalInfo(request.getAdditionalInfo())
                 .createdBy(creator)
+                .mainCaregiver(creator) // 임시: createdBy와 동일하게 설정
+                // 신생아 전용 필드들
+                .birthWeightGrams(request.getBirthWeightGrams())
+                .birthHeightCm(request.getBirthHeightCm())
+                .headCircumferenceCm(request.getHeadCircumferenceCm())
+                .gestationalAgeWeeks(request.getGestationalAgeWeeks())
+                .deliveryType(request.getDeliveryType())
+                .allergies(request.getAllergies())
+                .specialCareNeeds(request.getSpecialCareNeeds())
+                .lastCheckupDate(request.getLastCheckupDate())
                 .build();
 
+        // 케어 대상 유형 자동 결정
+        careSubject.determineSubjectType();
+
         CareSubject savedCareSubject = careSubjectRepository.save(careSubject);
+        log.info("케어 대상 저장 완료 - ID: {}, 이름: {}, 타입: {}",
+                savedCareSubject.getId(), savedCareSubject.getName(), savedCareSubject.getSubjectType());
 
         // 생성자를 PRIMARY 보호자로 자동 등록
         Guardian primaryGuardian = Guardian.builder()
@@ -57,12 +87,13 @@ public class CareSubjectService {
                 .role(GuardianRole.PRIMARY)
                 .status(GuardianStatus.ACCEPTED)
                 .invitedBy(creator)
+                .memo("케어 대상 생성자")
                 .build();
 
         primaryGuardian.setDefaultPermissions();
         guardianRepository.save(primaryGuardian);
+        log.info("PRIMARY 보호자 등록 완료 - 사용자: {}", creator.getEmail());
 
-        log.info("Created care subject: {} by user: {}", savedCareSubject.getName(), creator.getEmail());
         return savedCareSubject;
     }
 
