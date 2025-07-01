@@ -1,6 +1,26 @@
 spring:
   profiles:
     active: dev, email
+
+  # Jackson 설정
+  jackson:
+    # 빈 문자열을 null로 처리
+    deserialization:
+      accept-empty-string-as-null-object: true
+      accept-empty-array-as-null-object: true
+      accept-single-value-as-array: true
+      fail-on-unknown-properties: false
+      fail-on-null-for-primitives: false
+    # 날짜 관련 설정
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+    # 기본 프로퍼티 포함 설정
+    default-property-inclusion: non_null
+    # 날짜 형식 설정
+    date-format: "yyyy-MM-dd"
+    time-zone: "Asia/Seoul"
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -8,7 +28,56 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        # SQL 파라미터 로깅 활성화
+        show_sql: true
+        type:
+          descriptor:
+            sql: trace
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+# 로깅 레벨 설정
 logging:
   level:
+    # 루트 로깅 레벨
+    root: INFO
+
+    # Spring Web 관련 로깅
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation: DEBUG
+
+    # Hibernate/JPA 관련 로깅
+    org.hibernate: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.engine.QueryParameters: DEBUG
+    org.hibernate.engine.query.HQLQueryPlan: DEBUG
+
+    # Spring Security 로깅
+    org.springframework.security: DEBUG
+
+    # RestTemplate 로깅
     org.springframework.web.client.RestTemplate: DEBUG
+
+    # 애플리케이션 패키지 로깅
+    carehub: DEBUG
+
+    # 스프링 부트 관련
+    org.springframework.boot.autoconfigure: DEBUG
+
+    # 트랜잭션 로깅
+    org.springframework.transaction: DEBUG
+
+    # Bean 생성 관련
+    org.springframework.beans: DEBUG
+
+    # AOP 관련
+    org.springframework.aop: DEBUG
+
+    # Jackson 관련 로깅
+    com.fasterxml.jackson: DEBUG
+
+  # 로그 패턴 설정
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
